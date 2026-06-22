@@ -1,0 +1,28 @@
+# Help and target folders
+backend/target/
+frontend/dist/
+frontend/tmp/
+frontend/out-tsc/
+
+# Node dependencies
+node_modules/
+frontend/node_modules/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
