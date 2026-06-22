@@ -11,7 +11,7 @@ import { User } from '../../models/user';
     <form (ngSubmit)="signup()">
         <input type="text" name="name" [(ngModel)]="user.name" placeholder="Name" required>
         <input type="email" name="email" [(ngModel)]="user.email" placeholder="Email" required>
-        <input type="password" name="password" [(ngModel)]="user.password" placeholder="Password required>
+        <input type="password" name="password" [(ngModel)]="user.password" placeholder="Password" required>
         <button type="submit">Signup</button>
     </form>
     `

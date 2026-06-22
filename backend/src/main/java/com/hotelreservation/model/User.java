@@ -16,7 +16,7 @@ public class User {
     private String role = "USER";
 
     @OneToMany(mappedBy = "user")
-    private List<Reservarion> reservations;
+    private List<Reservation> reservations;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

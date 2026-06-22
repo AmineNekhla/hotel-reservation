@@ -1,14 +1,15 @@
 package com.hotelreservation.model;
 
 import jakarta.persistence.*;
-import java.tima.LocalDate;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "reservations")
 
-public class Reservarion {
+public class Reservation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

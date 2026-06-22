@@ -2,8 +2,8 @@ package com.hotelreservation.service;
 
 import com.hotelreservation.model.User;
 import com.hotelreservation.repository.UserRepository;
-import org.springFramework.beans.factory.annotation.Autowired;
-import org.springFramework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;

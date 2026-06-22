@@ -2,14 +2,14 @@ package com.hotelreservation.controller;
 
 import com.hotelreservation.model.User;
 import com.hotelreservation.service.UserService;
-import org.springFramework.http.ResponseEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-private class UserController {
+public class UserController {
     private final UserService userService;
 
     public UserController(UserService userService) {
@@ -29,11 +29,11 @@ private class UserController {
     }
     //READ BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id {
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
         return userService.getUserById(id)
         .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
-    })
+    }
     //UPDATE
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User updateUser) {
@@ -48,7 +48,7 @@ private class UserController {
         .orElse(ResponseEntity.notFound().build());
     }
     //DELETE
-    @DeletMapping("/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         if (userService.getUserById(id).isPresent()) {
             userService.deleteUser(id);
