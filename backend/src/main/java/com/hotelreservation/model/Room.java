@@ -1,5 +1,6 @@
 package com.hotelreservation.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class Room {
     private int capacity;
     private boolean availability = true;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "room")
     private List<Reservation> reservations;
 

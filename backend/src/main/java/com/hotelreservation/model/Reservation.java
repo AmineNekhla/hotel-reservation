@@ -1,5 +1,6 @@
 package com.hotelreservation.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -13,10 +14,12 @@ public class Reservation {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties({"reservations", "password"})
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "room_id")
+    @JsonIgnoreProperties({"reservations"})
     private Room room;
 
     private LocalDate startDate;
