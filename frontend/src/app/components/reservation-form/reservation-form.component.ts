@@ -1,61 +1,104 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReservationService } from '../../services/reservation.service';
-import { AuthService } from '../../services/auth.service';
 import { RoomService } from '../../services/room.service';
 import { Room } from '../../models/room';
 
 @Component({
   selector: 'app-reservation-form',
   template: `
-    <div class="container">
-      <div class="header">
-        <h2>📅 Make a Reservation</h2>
-        <a routerLink="/rooms">← Back to Rooms</a>
-      </div>
-
-      <div *ngIf="room" class="room-info">
-        <h3>Room: {{ room.type }}</h3>
-        <p>Price: \${{ room.price }}/night | Capacity: {{ room.capacity }} person(s)</p>
-      </div>
-
-      <div *ngIf="!successMsg">
-        <form (ngSubmit)="submit()">
-          <div class="form-group">
-            <label>Check-in Date</label>
-            <input id="start-date" type="date" name="startDate" [(ngModel)]="startDate" required />
+    <div class="page-wrapper">
+      <div class="container py-4">
+        <div class="reservation-container">
+          <div class="header">
+            <h2>📅 Complete Your Booking</h2>
+            <a routerLink="/rooms" class="btn btn-secondary btn-sm">← Back to Rooms</a>
           </div>
-          <div class="form-group">
-            <label>Check-out Date</label>
-            <input id="end-date" type="date" name="endDate" [(ngModel)]="endDate" required />
-          </div>
-          <button id="reserve-submit-btn" type="submit">Confirm Reservation</button>
-        </form>
-        <p *ngIf="errorMsg" class="error">{{ errorMsg }}</p>
-      </div>
 
-      <div *ngIf="successMsg" class="success-box">
-        <p>✅ {{ successMsg }}</p>
-        <a routerLink="/dashboard">View My Reservations</a>
+          <div *ngIf="room" class="room-summary card">
+            <div class="room-summary-image" [style.backgroundImage]="'url(' + room.imageUrl + ')'"></div>
+            <div class="room-summary-details">
+              <h3>{{ room.type }}</h3>
+              <p class="text-muted">Room {{ room.roomNumber }}</p>
+              <div class="meta">
+                <span>💰 \${{ room.price }}/night</span>
+                <span>👤 Up to {{ room.capacity }} guests</span>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!successMsg" class="card form-card">
+            <form (ngSubmit)="submit()">
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label class="form-label">Check-in Date</label>
+                  <input id="start-date" type="date" class="form-control" name="startDate" [(ngModel)]="startDate" required />
+                </div>
+                <div class="form-group flex-1">
+                  <label class="form-label">Check-out Date</label>
+                  <input id="end-date" type="date" class="form-control" name="endDate" [(ngModel)]="endDate" required />
+                </div>
+              </div>
+              <button id="reserve-submit-btn" type="submit" class="btn btn-primary btn-block mt-3" [disabled]="isLoading">
+                {{ isLoading ? 'Processing...' : 'Confirm Reservation' }}
+              </button>
+            </form>
+            <div *ngIf="errorMsg" class="error-message mt-3 text-center">
+              {{ errorMsg }}
+            </div>
+          </div>
+
+          <div *ngIf="successMsg" class="success-box card">
+            <div class="success-icon">✅</div>
+            <h3>Reservation Confirmed!</h3>
+            <p>{{ successMsg }}</p>
+            <a routerLink="/dashboard" class="btn btn-primary mt-3">View My Bookings</a>
+          </div>
+        </div>
       </div>
     </div>
   `,
   styles: [`
-    .container { max-width: 500px; margin: 60px auto; padding: 30px; border: 1px solid #ddd; border-radius: 8px; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .header h2 { margin: 0; }
-    .header a { color: #007bff; text-decoration: none; }
-    .room-info { background: #f0f8ff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-    .room-info h3 { margin: 0 0 5px; }
-    .room-info p { margin: 0; color: #555; }
-    .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
-    label { margin-bottom: 5px; font-weight: bold; }
-    input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-    button { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
-    button:hover { background: #1e7e34; }
-    .success-box { background: #d4edda; padding: 20px; border-radius: 6px; text-align: center; }
-    .success-box a { display: block; margin-top: 10px; color: #007bff; }
-    .error { color: red; }
+    .reservation-container { max-width: 600px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .header h2 { margin: 0; color: var(--primary-color); }
+    
+    .room-summary {
+      display: flex;
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+    .room-summary-image {
+      width: 150px;
+      background-size: cover;
+      background-position: center;
+      background-color: #e2e8f0;
+    }
+    .room-summary-details {
+      padding: 1.5rem;
+      flex: 1;
+    }
+    .room-summary-details h3 { margin: 0 0 0.25rem; }
+    .text-muted { color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.75rem; }
+    .meta { display: flex; gap: 1.5rem; font-weight: 500; font-size: 0.875rem; }
+    
+    .form-card { padding: 2rem; }
+    .form-row { display: flex; gap: 1.5rem; }
+    .flex-1 { flex: 1; }
+    @media (max-width: 500px) { .form-row { flex-direction: column; gap: 0; } }
+    
+    .btn-block { width: 100%; padding: 0.875rem; font-size: 1.125rem; }
+    .mt-3 { margin-top: 1.5rem; }
+    .text-center { text-align: center; }
+    
+    .success-box {
+      padding: 3rem 2rem;
+      text-align: center;
+      background: rgba(16, 185, 129, 0.05);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .success-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .success-box h3 { color: var(--success-color); }
   `]
 })
 export class ReservationFormComponent implements OnInit {
@@ -65,13 +108,13 @@ export class ReservationFormComponent implements OnInit {
   endDate = '';
   successMsg = '';
   errorMsg = '';
+  isLoading = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private reservationService: ReservationService,
-    private roomService: RoomService,
-    private authService: AuthService
+    private roomService: RoomService
   ) {}
 
   ngOnInit() {
@@ -88,11 +131,7 @@ export class ReservationFormComponent implements OnInit {
 
   submit() {
     this.errorMsg = '';
-    const currentUser = this.authService.getCurrentUser();
-    if (!currentUser || !currentUser.id) {
-      this.errorMsg = 'You must be logged in to make a reservation.';
-      return;
-    }
+    
     if (!this.startDate || !this.endDate) {
       this.errorMsg = 'Please select both check-in and check-out dates.';
       return;
@@ -102,17 +141,20 @@ export class ReservationFormComponent implements OnInit {
       return;
     }
 
+    this.isLoading = true;
+    
     this.reservationService.createReservation({
-      userId: currentUser.id,
       roomId: this.roomId,
       startDate: this.startDate,
       endDate: this.endDate
     }).subscribe({
       next: () => {
-        this.successMsg = 'Reservation confirmed successfully!';
+        this.isLoading = false;
+        this.successMsg = 'Your booking has been created successfully. We look forward to your stay!';
       },
       error: (err) => {
-        this.errorMsg = err.error || 'Failed to create reservation.';
+        this.isLoading = false;
+        this.errorMsg = err.message || 'Failed to create reservation.';
       }
     });
   }

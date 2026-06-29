@@ -18,12 +18,4 @@ export class RoomService {
   getRoomById(id: number): Observable<Room> {
     return this.http.get<Room>(`${this.apiUrl}/${id}`);
   }
-
-  addRoom(room: Room): Observable<Room> {
-    return this.http.post<Room>(this.apiUrl, room);
-  }
-
-  deleteRoom(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
 }

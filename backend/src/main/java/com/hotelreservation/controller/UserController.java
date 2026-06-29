@@ -1,72 +1,36 @@
 package com.hotelreservation.controller;
 
+import com.hotelreservation.dto.response.UserResponse;
+import com.hotelreservation.exception.ResourceNotFoundException;
 import com.hotelreservation.model.User;
+import com.hotelreservation.repository.UserRepository;
 import com.hotelreservation.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
+
     private final UserService userService;
+    private final UserRepository userRepository;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
-    // CREATE
-    @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.saveUser(user);
-    }
-
-    // READ ALL
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
-    }
-
-    // READ BY ID
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // READ BY EMAIL (used for login)
-    @GetMapping("/email/{email}")
-    public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
-        User user = userService.findByEmail(email);
-        if (user != null) {
-            return ResponseEntity.ok(user);
-        }
-        return ResponseEntity.notFound().build();
-    }
-
-    // UPDATE
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User updateUser) {
-        return userService.getUserById(id)
-                .map(user -> {
-                    user.setName(updateUser.getName());
-                    user.setEmail(updateUser.getEmail());
-                    user.setPassword(updateUser.getPassword());
-                    user.setRole(updateUser.getRole());
-                    return ResponseEntity.ok(userService.saveUser(user));
-                })
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // DELETE
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        if (userService.getUserById(id).isPresent()) {
-            userService.deleteUser(id);
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
+    // Get current authenticated user profile
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                
+        return ResponseEntity.ok(userService.getUserById(user.getId()));
     }
 }

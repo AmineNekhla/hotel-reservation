@@ -1,10 +1,12 @@
+import { User } from './user';
+import { Room } from './room';
+
 export interface Reservation {
   id?: number;
-  userId?: number;
-  roomId?: number;
+  user: User;
+  room: Room;
   startDate: string;
   endDate: string;
-  status?: string;
-  user?: any;
-  room?: any;
+  status: string;
+  createdAt: string;
 }

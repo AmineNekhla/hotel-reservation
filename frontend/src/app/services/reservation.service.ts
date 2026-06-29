@@ -11,19 +11,19 @@ export class ReservationService {
 
   constructor(private http: HttpClient) {}
 
-  createReservation(data: { userId: number; roomId: number; startDate: string; endDate: string }): Observable<Reservation> {
+  createReservation(data: { roomId: number; startDate: string; endDate: string }): Observable<Reservation> {
     return this.http.post<Reservation>(this.apiUrl, data);
   }
 
-  getByUserId(userId: number): Observable<Reservation[]> {
-    return this.http.get<Reservation[]>(`${this.apiUrl}/user/${userId}`);
+  getMyReservations(): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${this.apiUrl}/my`);
   }
 
-  getAllReservations(): Observable<Reservation[]> {
-    return this.http.get<Reservation[]>(this.apiUrl);
+  getReservationById(id: number): Observable<Reservation> {
+    return this.http.get<Reservation>(`${this.apiUrl}/${id}`);
   }
 
-  deleteReservation(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  cancelReservation(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}/cancel`);
   }
 }

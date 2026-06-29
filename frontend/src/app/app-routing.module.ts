@@ -8,14 +8,20 @@ import { ReservationFormComponent } from './components/reservation-form/reservat
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AdminComponent } from './components/admin/admin.component';
 
+import { HomeComponent } from './components/home/home.component';
+import { NotFoundComponent } from './components/not-found/not-found.component';
+import { AuthGuard } from './guards/auth.guard';
+import { AdminGuard } from './guards/admin.guard';
+
 const routes: Routes = [
-  { path: '', component: LoginComponent },
+  { path: '', component: HomeComponent },
+  { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'rooms', component: RoomListComponent },
-  { path: 'reservation', component: ReservationFormComponent },
-  { path: 'dashboard', component: DashboardComponent },
-  { path: 'admin', component: AdminComponent },
-  { path: '**', redirectTo: '' }
+  { path: 'reservation', component: ReservationFormComponent, canActivate: [AuthGuard] },
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
+  { path: 'admin', component: AdminComponent, canActivate: [AuthGuard, AdminGuard] },
+  { path: '**', component: NotFoundComponent }
 ];
 
 @NgModule({
