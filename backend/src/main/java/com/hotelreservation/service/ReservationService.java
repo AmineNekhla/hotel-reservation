@@ -13,7 +13,7 @@ public class ReservationService {
     @Autowired
     private ReservationRepository reservationRepository;
 
-    public List<Reservation> getAllReservations(){
+    public List<Reservation> getAllReservations() {
         return reservationRepository.findAll();
     }
 
@@ -21,7 +21,7 @@ public class ReservationService {
         return reservationRepository.findById(id);
     }
 
-    public List<Reservation> getReservationByUserId(Long userId){
+    public List<Reservation> getReservationsByUserId(Long userId) {
         return reservationRepository.findByUserId(userId);
     }
 

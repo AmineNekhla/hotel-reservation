@@ -22,32 +22,45 @@ public class UserController {
         return userService.saveUser(user);
     }
 
-    //READ ALL
+    // READ ALL
     @GetMapping
     public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
-    //READ BY ID
+
+    // READ BY ID
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         return userService.getUserById(id)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
-    //UPDATE
+
+    // READ BY EMAIL (used for login)
+    @GetMapping("/email/{email}")
+    public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
+        User user = userService.findByEmail(email);
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    // UPDATE
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User updateUser) {
         return userService.getUserById(id)
-        .map(user -> {
-            user.setName(updateUser.getName());
-            user.setEmail(updateUser.getEmail());
-            user.setPassword(updateUser.getPassword());
-            user.setRole(updateUser.getRole());
-            return ResponseEntity.ok(userService.saveUser(user));
-        })
-        .orElse(ResponseEntity.notFound().build());
+                .map(user -> {
+                    user.setName(updateUser.getName());
+                    user.setEmail(updateUser.getEmail());
+                    user.setPassword(updateUser.getPassword());
+                    user.setRole(updateUser.getRole());
+                    return ResponseEntity.ok(userService.saveUser(user));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
-    //DELETE
+
+    // DELETE
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         if (userService.getUserById(id).isPresent()) {

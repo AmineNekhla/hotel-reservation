@@ -14,22 +14,22 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AdminComponent } from './components/admin/admin.component';
 
 @NgModule({
-    declarations: [
-        AppComponent,
-        LoginComponent,
-        SignupComponent,
-        RoomListComponent,
-        ReservationFormComponent,
-        DashboardComponent,
-        AdminComponent
-    ],
-    imports: [
-        BrowserModule,
-        AppRoutingModule,
-        FormsModule,
-        HttpClientModule
-    ],
-    providers: [],
-    bootstrap: [AppComponent]
+  declarations: [
+    AppComponent,
+    LoginComponent,
+    SignupComponent,
+    RoomListComponent,
+    ReservationFormComponent,
+    DashboardComponent,
+    AdminComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    FormsModule,
+    HttpClientModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}

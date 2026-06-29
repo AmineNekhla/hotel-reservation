@@ -9,15 +9,17 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { AdminComponent } from './components/admin/admin.component';
 
 const routes: Routes = [
-    { path: '', component: LoginComponent },
-    { path: 'signup', component: SignupComponent },
-    { path: 'rooms', component: RoomListComponent },
-    { path: 'reservation', component: DashboardComponent },
-    { path: 'admin', component: AdminComponent }
+  { path: '', component: LoginComponent },
+  { path: 'signup', component: SignupComponent },
+  { path: 'rooms', component: RoomListComponent },
+  { path: 'reservation', component: ReservationFormComponent },
+  { path: 'dashboard', component: DashboardComponent },
+  { path: 'admin', component: AdminComponent },
+  { path: '**', redirectTo: '' }
 ];
 
 @NgModule({
-    imports: [RouterModule.forRoot(routes)],
-    exports: [RouterModule]
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}
