@@ -9,71 +9,90 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+/**
+ * Centralised exception handler for the entire application.
+ * <p>
+ * Every domain exception is mapped to a structured {@link ApiErrorResponse} so
+ * that the API always returns consistent JSON error bodies — never raw stack
+ * traces or default Spring error pages.
+ * </p>
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
-        ApiErrorResponse error = new ApiErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
-                "Not Found",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    public ResponseEntity<ApiErrorResponse> handleNotFound(ResourceNotFoundException ex,
+                                                           HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage(), request);
     }
 
     @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ApiErrorResponse> handleBadRequestException(BadRequestException ex, HttpServletRequest request) {
-        ApiErrorResponse error = new ApiErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ApiErrorResponse> handleBadRequest(BadRequestException ex,
+                                                             HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage(), request);
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ApiErrorResponse> handleConflictException(ConflictException ex, HttpServletRequest request) {
-        ApiErrorResponse error = new ApiErrorResponse(
-                HttpStatus.CONFLICT.value(),
-                "Conflict",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    public ResponseEntity<ApiErrorResponse> handleConflict(ConflictException ex,
+                                                           HttpServletRequest request) {
+        return build(HttpStatus.CONFLICT, "Conflict", ex.getMessage(), request);
     }
 
+    /**
+     * Handles Bean Validation failures ({@code @Valid} on controller method parameters).
+     * Returns a structured map of field → error message pairs instead of a raw string.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
+    public ResponseEntity<ApiErrorResponse> handleValidation(MethodArgumentNotValidException ex,
+                                                             HttpServletRequest request) {
+        // Collect field-level validation errors into an ordered map for deterministic output.
+        Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.toMap(
+                        FieldError::getField,
+                        fe -> fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "Invalid value",
+                        (existing, duplicate) -> existing,  // keep first error per field
+                        LinkedHashMap::new
+                ));
 
-        ApiErrorResponse error = new ApiErrorResponse(
+        ApiErrorResponse response = new ApiErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Validation Failed",
-                errors.toString(),
-                request.getRequestURI()
+                "One or more fields failed validation",
+                request.getRequestURI(),
+                fieldErrors
         );
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Catch-all handler for any unhandled exception.
+     * <p>
+     * Deliberately returns a generic message — internal error details are
+     * never leaked to the client for security reasons.
+     * </p>
+     */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleGlobalException(Exception ex, HttpServletRequest request) {
-        ApiErrorResponse error = new ApiErrorResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+    public ResponseEntity<ApiErrorResponse> handleGeneral(Exception ex,
+                                                          HttpServletRequest request) {
+        // Log the real cause server-side (in production use a proper logger like SLF4J).
+        System.err.println("[ERROR] Unhandled exception at " + request.getRequestURI() + ": " + ex.getMessage());
+
+        return build(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Internal Server Error",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+                "An unexpected error occurred. Please try again later.",
+                request);
+    }
+
+    // ─── Private Helpers ───────────────────────────────────────────────────────
+
+    private ResponseEntity<ApiErrorResponse> build(HttpStatus status, String error,
+                                                   String message, HttpServletRequest request) {
+        ApiErrorResponse body = new ApiErrorResponse(
+                status.value(), error, message, request.getRequestURI(), null);
+        return new ResponseEntity<>(body, status);
     }
 }
