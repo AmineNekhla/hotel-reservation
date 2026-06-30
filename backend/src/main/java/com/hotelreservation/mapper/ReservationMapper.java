@@ -2,31 +2,17 @@ package com.hotelreservation.mapper;
 
 import com.hotelreservation.dto.response.ReservationResponse;
 import com.hotelreservation.model.Reservation;
-import org.springframework.stereotype.Component;
 
-@Component
-public class ReservationMapper {
+/**
+ * Contract for mapping {@link Reservation} entities to {@link ReservationResponse} DTOs.
+ */
+public interface ReservationMapper {
 
-    private final UserMapper userMapper;
-    private final RoomMapper roomMapper;
-
-    public ReservationMapper(UserMapper userMapper, RoomMapper roomMapper) {
-        this.userMapper = userMapper;
-        this.roomMapper = roomMapper;
-    }
-
-    public ReservationResponse toResponse(Reservation reservation) {
-        if (reservation == null) {
-            return null;
-        }
-        return new ReservationResponse(
-                reservation.getId(),
-                userMapper.toResponse(reservation.getUser()),
-                roomMapper.toResponse(reservation.getRoom()),
-                reservation.getStartDate(),
-                reservation.getEndDate(),
-                reservation.getStatus(),
-                reservation.getCreatedAt()
-        );
-    }
+    /**
+     * Maps a {@link Reservation} entity to a {@link ReservationResponse} DTO.
+     *
+     * @param reservation the entity to map; may be {@code null}
+     * @return the mapped DTO, or {@code null} if the input is null
+     */
+    ReservationResponse toResponse(Reservation reservation);
 }
