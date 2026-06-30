@@ -6,9 +6,7 @@ import com.hotelreservation.dto.response.RoomResponse;
 import com.hotelreservation.dto.response.StatsResponse;
 import com.hotelreservation.dto.response.UserResponse;
 import com.hotelreservation.model.ReservationStatus;
-import com.hotelreservation.repository.ReservationRepository;
-import com.hotelreservation.repository.RoomRepository;
-import com.hotelreservation.repository.UserRepository;
+import com.hotelreservation.service.AdminService;
 import com.hotelreservation.service.ReservationService;
 import com.hotelreservation.service.RoomService;
 import com.hotelreservation.service.UserService;
@@ -17,88 +15,131 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * REST controller exposing admin-only endpoints for managing users, rooms,
+ * reservations, and dashboard statistics.
+ * <p>
+ * All routes under {@code /api/admin} are protected by {@code ROLE_ADMIN}
+ * in the Spring Security configuration.
+ * </p>
+ */
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
 
+    private final AdminService adminService;
     private final UserService userService;
     private final RoomService roomService;
     private final ReservationService reservationService;
-    private final UserRepository userRepository;
-    private final RoomRepository roomRepository;
-    private final ReservationRepository reservationRepository;
 
-    public AdminController(UserService userService, RoomService roomService,
-                           ReservationService reservationService, UserRepository userRepository,
-                           RoomRepository roomRepository, ReservationRepository reservationRepository) {
+    public AdminController(AdminService adminService,
+                           UserService userService,
+                           RoomService roomService,
+                           ReservationService reservationService) {
+        this.adminService = adminService;
         this.userService = userService;
         this.roomService = roomService;
         this.reservationService = reservationService;
-        this.userRepository = userRepository;
-        this.roomRepository = roomRepository;
-        this.reservationRepository = reservationRepository;
     }
 
-    // DASHBOARD STATS
+    // ─── Dashboard ─────────────────────────────────────────────────────────────
+
+    /**
+     * Returns aggregated real-time statistics for the admin dashboard.
+     *
+     * @return {@link StatsResponse} with user, room, and reservation counts
+     */
     @GetMapping("/stats")
     public ResponseEntity<StatsResponse> getStats() {
-        long totalUsers = userRepository.count();
-        long totalRooms = roomRepository.count();
-        long availableRooms = roomRepository.findAll().stream().filter(r -> r.isAvailability()).count();
-        long occupiedRooms = totalRooms - availableRooms;
-        long totalReservations = reservationRepository.count();
-        
-        long pendingRes = reservationRepository.findAll().stream().filter(r -> r.getStatus() == ReservationStatus.PENDING).count();
-        long confirmedRes = reservationRepository.findAll().stream().filter(r -> r.getStatus() == ReservationStatus.CONFIRMED).count();
-        long cancelledRes = reservationRepository.findAll().stream().filter(r -> r.getStatus() == ReservationStatus.CANCELLED).count();
-
-        StatsResponse stats = new StatsResponse(
-                totalUsers, totalRooms, availableRooms, occupiedRooms,
-                totalReservations, pendingRes, confirmedRes, cancelledRes
-        );
-        return ResponseEntity.ok(stats);
+        return ResponseEntity.ok(adminService.getDashboardStats());
     }
 
-    // USER MANAGEMENT
+    // ─── User Management ───────────────────────────────────────────────────────
+
+    /**
+     * Retrieves all registered users.
+     *
+     * @return list of all users as {@link UserResponse}
+     */
     @GetMapping("/users")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    /**
+     * Permanently deletes a user by ID.
+     *
+     * @param id the ID of the user to delete
+     * @return 204 No Content on success
+     */
     @DeleteMapping("/users/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
-    // ROOM MANAGEMENT
+    // ─── Room Management ───────────────────────────────────────────────────────
+
+    /**
+     * Creates a new hotel room.
+     *
+     * @param request validated room creation payload
+     * @return the created room as {@link RoomResponse}
+     */
     @PostMapping("/rooms")
     public ResponseEntity<RoomResponse> createRoom(@Valid @RequestBody RoomRequest request) {
         return ResponseEntity.ok(roomService.createRoom(request));
     }
 
+    /**
+     * Updates an existing room's details.
+     *
+     * @param id      the ID of the room to update
+     * @param request validated room update payload
+     * @return the updated room as {@link RoomResponse}
+     */
     @PutMapping("/rooms/{id}")
-    public ResponseEntity<RoomResponse> updateRoom(@PathVariable Long id, @Valid @RequestBody RoomRequest request) {
+    public ResponseEntity<RoomResponse> updateRoom(@PathVariable Long id,
+                                                    @Valid @RequestBody RoomRequest request) {
         return ResponseEntity.ok(roomService.updateRoom(id, request));
     }
 
+    /**
+     * Deletes a room by ID.
+     *
+     * @param id the ID of the room to delete
+     * @return 204 No Content on success
+     */
     @DeleteMapping("/rooms/{id}")
     public ResponseEntity<Void> deleteRoom(@PathVariable Long id) {
         roomService.deleteRoom(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
-    // RESERVATION MANAGEMENT
+    // ─── Reservation Management ────────────────────────────────────────────────
+
+    /**
+     * Retrieves all reservations across all users.
+     *
+     * @return list of all reservations as {@link ReservationResponse}
+     */
     @GetMapping("/reservations")
     public ResponseEntity<List<ReservationResponse>> getAllReservations() {
         return ResponseEntity.ok(reservationService.getAllReservations());
     }
 
+    /**
+     * Updates the status of a reservation (e.g., PENDING → CONFIRMED or CANCELLED).
+     *
+     * @param id     the ID of the reservation to update
+     * @param status the new {@link ReservationStatus}
+     * @return the updated reservation as {@link ReservationResponse}
+     */
     @PutMapping("/reservations/{id}/status")
     public ResponseEntity<ReservationResponse> updateReservationStatus(
-            @PathVariable Long id, @RequestParam ReservationStatus status) {
+            @PathVariable Long id,
+            @RequestParam ReservationStatus status) {
         return ResponseEntity.ok(reservationService.updateReservationStatus(id, status));
     }
 }

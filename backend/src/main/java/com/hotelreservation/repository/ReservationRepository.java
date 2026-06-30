@@ -10,8 +10,17 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
+
+    /** Finds all reservations belonging to a given user. */
     List<Reservation> findByUserId(Long userId);
 
+    /** Counts reservations with the given status using a derived query. */
+    long countByStatus(ReservationStatus status);
+
+    /**
+     * Checks whether a confirmed reservation already overlaps with the requested date range.
+     * Uses a half-open interval: [startDate, endDate) to detect true overlaps.
+     */
     @Query("SELECT COUNT(r) > 0 FROM Reservation r " +
            "WHERE r.room.id = :roomId " +
            "AND r.status = :status " +

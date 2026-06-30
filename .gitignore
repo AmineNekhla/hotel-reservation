@@ -1,28 +1,102 @@
-# Help and target folders
+# ============================================================
+#  LuxeStay Hotel Reservation System — .gitignore
+# ============================================================
+
+# ─── Maven / Java Build Output ───────────────────────────────
 backend/target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+# ─── Maven Wrapper ───────────────────────────────────────────
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ─── Bundled Maven (keep binaries out of repo) ───────────────
+backend/apache-maven-3*/
+
+# ─── Test/Debug Artifacts ────────────────────────────────────
+backend/test_login.json
+*.http
+*.rest
+
+# ─── Spring Boot ─────────────────────────────────────────────
+HELP.md
+spring.log
+
+# ─── Angular / Node ──────────────────────────────────────────
 frontend/dist/
 frontend/tmp/
 frontend/out-tsc/
+frontend/.angular/cache/
+.angular/
 
-# Node dependencies
+# ─── Node Dependencies ───────────────────────────────────────
 node_modules/
 frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm/
 
-# IDEs and editors
+# ─── Angular Cache ───────────────────────────────────────────
+.angular/cache/
+
+# ─── Environment Files (NEVER commit secrets) ────────────────
+.env
+.env.local
+.env.*.local
+application-secrets.properties
+application-prod.properties
+
+# ─── IDEs and Editors ────────────────────────────────────────
 .idea/
+*.iml
+*.iws
+*.ipr
 .vscode/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+.project
+.classpath
+.settings/
+*.launch
+.factorypath
 
-# OS files
+# ─── OS Files ────────────────────────────────────────────────
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+Desktop.ini
 
-# Log files
+# ─── Log Files ───────────────────────────────────────────────
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+logs/
+
+# ─── H2 Database File (if file-based) ────────────────────────
+*.mv.db
+*.trace.db
+
+# ─── Docker (if added later) ─────────────────────────────────
+.docker/
+
+# ─── Miscellaneous ───────────────────────────────────────────
+*.orig
+*.bak
+*.tmp

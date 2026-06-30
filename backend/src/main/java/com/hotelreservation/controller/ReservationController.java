@@ -11,6 +11,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST controller for reservation operations performed by authenticated users.
+ * <p>
+ * Users can create reservations, view their own bookings, and cancel them.
+ * Admin-level reservation management is handled separately in {@link AdminController}.
+ * </p>
+ */
 @RestController
 @RequestMapping("/api/reservations")
 public class ReservationController {
@@ -21,39 +28,57 @@ public class ReservationController {
         this.reservationService = reservationService;
     }
 
-    // CREATE (authenticated user)
+    /**
+     * Creates a new reservation for the currently authenticated user.
+     *
+     * @param request validated reservation creation payload
+     * @return the created reservation as {@link ReservationResponse}
+     */
     @PostMapping
     public ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody ReservationRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
+        String email = getAuthenticatedUserEmail();
         return ResponseEntity.ok(reservationService.createReservation(request, email));
     }
 
-    // READ MY RESERVATIONS
+    /**
+     * Retrieves all reservations belonging to the currently authenticated user.
+     *
+     * @return list of the user's reservations
+     */
     @GetMapping("/my")
     public ResponseEntity<List<ReservationResponse>> getMyReservations() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        // We need userId, but we can get reservations by email in service or controller.
-        // I will add a service method if needed. Let's just use email since service has it or will have it.
-        // Wait, ReservationService.getReservationsByUserId takes userId. I will add getReservationsByUserEmail to service below.
-        // Or fetch user by email here. Let's fetch user by email via service or modify service.
-        // We'll fix this in a moment. Let's just leave it calling a new method we'll add to service.
+        String email = getAuthenticatedUserEmail();
         return ResponseEntity.ok(reservationService.getReservationsByUserEmail(email));
     }
 
-    // READ BY ID
+    /**
+     * Retrieves a single reservation by its ID.
+     *
+     * @param id the reservation ID
+     * @return the matching reservation
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ReservationResponse> getReservationById(@PathVariable Long id) {
         return ResponseEntity.ok(reservationService.getReservationById(id));
     }
 
-    // CANCEL
+    /**
+     * Cancels a reservation. Only the reservation owner or an admin can cancel.
+     *
+     * @param id the ID of the reservation to cancel
+     * @return 204 No Content on success
+     */
     @DeleteMapping("/{id}/cancel")
     public ResponseEntity<Void> cancelReservation(@PathVariable Long id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
+        String email = getAuthenticatedUserEmail();
         reservationService.cancelReservation(id, email);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
+    }
+
+    // ─── Private Helpers ───────────────────────────────────────────────────────
+
+    private String getAuthenticatedUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
     }
 }
