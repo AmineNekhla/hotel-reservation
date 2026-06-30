@@ -34,8 +34,6 @@ public class Room {
     @Column(nullable = false)
     private int capacity;
 
-    @Column(nullable = false)
-    private boolean availability = true;
 
     private String imageUrl;
 
@@ -62,8 +60,7 @@ public class Room {
     public int getCapacity() { return capacity; }
     public void setCapacity(int capacity) { this.capacity = capacity; }
 
-    public boolean isAvailability() { return availability; }
-    public void setAvailability(boolean availability) { this.availability = availability; }
+
 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }

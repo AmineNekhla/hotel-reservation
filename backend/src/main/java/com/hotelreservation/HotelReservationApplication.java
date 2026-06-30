@@ -50,7 +50,6 @@ public class HotelReservationApplication {
         room.setDescription(description);
         room.setPrice(price);
         room.setCapacity(capacity);
-        room.setAvailability(true);
         room.setImageUrl(imageUrl);
         return room;
     }

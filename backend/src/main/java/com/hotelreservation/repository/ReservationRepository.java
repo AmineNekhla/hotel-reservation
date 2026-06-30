@@ -31,4 +31,26 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             @Param("endDate") LocalDate endDate,
             @Param("status") ReservationStatus status
     );
+
+    /**
+     * Finds the IDs of all rooms that are currently occupied on a specific date.
+     */
+    @Query("SELECT DISTINCT r.room.id FROM Reservation r " +
+           "WHERE r.status = :status " +
+           "AND r.startDate <= :date AND r.endDate > :date")
+    List<Long> findOccupiedRoomIdsOnDate(
+            @Param("date") LocalDate date,
+            @Param("status") ReservationStatus status
+    );
+
+    /**
+     * Counts how many unique rooms are currently occupied on a specific date.
+     */
+    @Query("SELECT COUNT(DISTINCT r.room.id) FROM Reservation r " +
+           "WHERE r.status = :status " +
+           "AND r.startDate <= :date AND r.endDate > :date")
+    long countOccupiedRoomsOnDate(
+            @Param("date") LocalDate date,
+            @Param("status") ReservationStatus status
+    );
 }

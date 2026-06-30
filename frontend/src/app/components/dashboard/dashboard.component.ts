@@ -1,39 +1,44 @@
 import { Component, OnInit } from '@angular/core';
 import { ReservationService } from '../../services/reservation.service';
 import { Reservation } from '../../models/reservation';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-dashboard',
   template: `
-    <div class="page-header">
+    <div class="page-header" style="padding: 3rem 0;">
       <div class="container">
-        <h1>My Bookings</h1>
+        <h1 style="font-size: 2rem;">My Trips</h1>
         <p>Manage your upcoming and past reservations</p>
       </div>
     </div>
 
-    <div class="container py-4">
-      <div *ngIf="loading" class="text-center py-4">
-        <p>Loading your reservations...</p>
-      </div>
+    <div class="container py-5">
+      <app-loading-spinner [loading]="loading"></app-loading-spinner>
       
       <div *ngIf="errorMsg" class="error-message text-center py-4">
         {{ errorMsg }}
       </div>
 
-      <div *ngIf="!loading && reservations.length === 0" class="text-center py-4 card p-5">
-        <h3>No reservations found</h3>
-        <p class="text-muted mt-2">You haven't booked any rooms yet.</p>
-        <a routerLink="/rooms" class="btn btn-primary mt-3">Browse Rooms</a>
+      <!-- Empty State -->
+      <div *ngIf="!loading && reservations.length === 0" class="empty-state card text-center py-5">
+        <div class="empty-icon slide-up">🧳</div>
+        <h3 class="slide-up delay-1">No trips booked... yet!</h3>
+        <p class="text-muted mt-2 mb-4 slide-up delay-2">Time to dust off your bags and start planning your next great adventure.</p>
+        <a routerLink="/rooms" class="btn btn-primary btn-lg slide-up delay-3">Start Exploring</a>
       </div>
 
+      <!-- Booking List -->
       <div class="booking-list" *ngIf="!loading && reservations.length > 0">
         <div class="card booking-card" *ngFor="let r of reservations">
           <div class="booking-image" [style.backgroundImage]="'url(' + r.room.imageUrl + ')'"></div>
           
           <div class="booking-details">
-            <div class="booking-header">
-              <h3>{{ r.room.type }} <span class="text-muted text-sm">Room {{ r.room.roomNumber }}</span></h3>
+            <div class="booking-header mb-3">
+              <div>
+                <h3 class="mb-1">{{ r.room.type }}</h3>
+                <p class="text-muted text-sm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> LuxeStay Signature Collection &bull; Room {{ r.room.roomNumber }}</p>
+              </div>
               <span class="badge" [ngClass]="{
                 'badge-warning': r.status === 'PENDING',
                 'badge-success': r.status === 'CONFIRMED',
@@ -41,25 +46,29 @@ import { Reservation } from '../../models/reservation';
               }">{{ r.status }}</span>
             </div>
             
-            <div class="booking-dates mt-3">
-              <div class="date-box">
-                <span class="text-muted text-sm">Check-in</span>
-                <strong>{{ r.startDate | date:'mediumDate' }}</strong>
+            <div class="booking-info-grid">
+              <div class="info-item">
+                <span class="text-muted text-xs uppercase font-bold tracking-wide">Check-in</span>
+                <strong>{{ r.startDate | date:'MMM d, y' }}</strong>
               </div>
-              <div class="date-arrow">→</div>
-              <div class="date-box">
-                <span class="text-muted text-sm">Check-out</span>
-                <strong>{{ r.endDate | date:'mediumDate' }}</strong>
+              <div class="info-item">
+                <span class="text-muted text-xs uppercase font-bold tracking-wide">Check-out</span>
+                <strong>{{ r.endDate | date:'MMM d, y' }}</strong>
+              </div>
+              <div class="info-item">
+                <span class="text-muted text-xs uppercase font-bold tracking-wide">Total Cost</span>
+                <strong class="text-primary">\${{ calculateTotal(r) }}</strong>
               </div>
             </div>
             
-            <div class="booking-footer mt-3">
-              <span class="text-muted text-sm">Booked on {{ r.createdAt | date:'mediumDate' }}</span>
+            <div class="booking-footer mt-4 pt-3" style="border-top: 1px solid var(--border-color);">
+              <span class="text-muted text-sm">Booked on {{ r.createdAt | date:'MMM d, y' }}</span>
               <button *ngIf="r.status !== 'CANCELLED'" 
                       (click)="cancelReservation(r.id!)" 
-                      class="btn btn-secondary btn-sm"
+                      class="btn btn-outline btn-sm btn-danger"
                       [disabled]="cancelLoading === r.id">
-                {{ cancelLoading === r.id ? 'Cancelling...' : 'Cancel Booking' }}
+                <span *ngIf="cancelLoading !== r.id">Cancel Reservation</span>
+                <span *ngIf="cancelLoading === r.id">Cancelling...</span>
               </button>
             </div>
           </div>
@@ -68,51 +77,52 @@ import { Reservation } from '../../models/reservation';
     </div>
   `,
   styles: [`
-    .page-header {
-      background-color: var(--primary-color);
-      color: white;
-      padding: 3rem 0;
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-    .page-header h1 {
-      color: white;
-      margin-bottom: 0.5rem;
-    }
-    .page-header p {
-      opacity: 0.8;
-      font-size: 1.125rem;
-    }
-    .py-4 { padding-top: 2rem; padding-bottom: 2rem; }
-    .p-5 { padding: 3rem; }
+    .py-5 { padding-top: 3rem; padding-bottom: 3rem; }
     .text-center { text-align: center; }
     .mt-2 { margin-top: 0.5rem; }
-    .mt-3 { margin-top: 1rem; }
+    .mt-4 { margin-top: 1.5rem; }
+    .mb-1 { margin-bottom: 0.25rem; }
+    .mb-3 { margin-bottom: 1rem; }
+    .mb-4 { margin-bottom: 1.5rem; }
+    .pt-3 { padding-top: 1rem; }
+    
     .text-muted { color: var(--text-secondary); }
     .text-sm { font-size: 0.875rem; }
+    .text-xs { font-size: 0.75rem; }
+    .text-primary { color: var(--primary-color); }
+    .font-bold { font-weight: 700; }
+    .tracking-wide { letter-spacing: 0.05em; }
+    .uppercase { text-transform: uppercase; }
+    
+    .empty-state { max-width: 600px; margin: 0 auto; padding: 4rem 2rem; }
+    .empty-icon { font-size: 4rem; margin-bottom: 1rem; }
     
     .booking-list {
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
-      max-width: 800px;
+      max-width: 900px;
       margin: 0 auto;
     }
     
     .booking-card {
       display: flex;
       overflow: hidden;
+      transition: all var(--transition-normal);
+    }
+    .booking-card:hover {
+      box-shadow: var(--shadow-lg);
     }
     
     .booking-image {
-      width: 200px;
+      width: 250px;
       background-size: cover;
       background-position: center;
       background-color: #e2e8f0;
     }
     
     .booking-details {
-      padding: 1.5rem;
+      padding: 1.5rem 2rem;
       flex: 1;
       display: flex;
       flex-direction: column;
@@ -127,25 +137,23 @@ import { Reservation } from '../../models/reservation';
     .booking-header h3 {
       margin: 0;
       color: var(--primary-color);
+      font-size: 1.25rem;
     }
     
-    .booking-dates {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
+    .booking-info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
       background: var(--background-color);
-      padding: 1rem;
+      padding: 1rem 1.5rem;
       border-radius: var(--radius-md);
+      align-items: center;
     }
     
-    .date-box {
+    .info-item {
       display: flex;
       flex-direction: column;
-    }
-    
-    .date-arrow {
-      color: var(--text-secondary);
-      font-weight: bold;
+      gap: 0.25rem;
     }
     
     .booking-footer {
@@ -153,23 +161,22 @@ import { Reservation } from '../../models/reservation';
       justify-content: space-between;
       align-items: center;
       margin-top: auto;
-      padding-top: 1rem;
     }
     
-    .badge {
-      padding: 0.25rem 0.75rem;
-      border-radius: var(--radius-full);
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: white;
-    }
-    .badge-warning { background-color: var(--warning-color); }
-    .badge-success { background-color: var(--success-color); }
-    .badge-error { background-color: var(--danger-color); }
+    /* Animations */
+    .slide-up { opacity: 0; transform: translateY(20px); animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
     
-    @media (max-width: 600px) {
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @media (max-width: 768px) {
       .booking-card { flex-direction: column; }
-      .booking-image { width: 100%; height: 150px; }
+      .booking-image { width: 100%; height: 200px; }
+      .booking-info-grid { grid-template-columns: 1fr 1fr; }
     }
   `]
 })
@@ -179,7 +186,10 @@ export class DashboardComponent implements OnInit {
   errorMsg = '';
   cancelLoading: number | null = null;
 
-  constructor(private reservationService: ReservationService) {}
+  constructor(
+    private reservationService: ReservationService,
+    private toast: ToastService
+  ) {}
 
   ngOnInit() {
     this.loadReservations();
@@ -189,28 +199,43 @@ export class DashboardComponent implements OnInit {
     this.loading = true;
     this.reservationService.getMyReservations().subscribe({
       next: (data) => {
-        this.reservations = data;
+        // Sort reservations by date descending (newest first)
+        this.reservations = data.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
         this.loading = false;
       },
-      error: (err) => {
+      error: () => {
         this.errorMsg = 'Failed to load reservations.';
+        this.toast.showError(this.errorMsg);
         this.loading = false;
       }
     });
   }
 
+  calculateTotal(reservation: Reservation): number {
+    const start = new Date(reservation.startDate);
+    const end = new Date(reservation.endDate);
+    start.setHours(0,0,0,0);
+    end.setHours(0,0,0,0);
+    
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays > 0 ? diffDays * reservation.room.price : reservation.room.price;
+  }
+
   cancelReservation(id: number) {
-    if (!confirm('Are you sure you want to cancel this reservation?')) return;
+    if (!confirm('Are you sure you want to cancel this reservation? This action cannot be undone.')) return;
     
     this.cancelLoading = id;
     this.reservationService.cancelReservation(id).subscribe({
       next: () => {
         this.cancelLoading = null;
-        this.loadReservations(); // reload to get updated status
+        this.toast.showSuccess('Reservation successfully cancelled.');
+        this.loadReservations();
       },
       error: (err) => {
         this.cancelLoading = null;
-        alert('Failed to cancel: ' + (err.message || 'Unknown error'));
+        this.toast.showError('Failed to cancel: ' + (err.message || 'Unknown error'));
       }
     });
   }

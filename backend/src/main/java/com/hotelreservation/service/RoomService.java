@@ -4,11 +4,14 @@ import com.hotelreservation.dto.request.RoomRequest;
 import com.hotelreservation.dto.response.RoomResponse;
 import com.hotelreservation.exception.ResourceNotFoundException;
 import com.hotelreservation.mapper.RoomMapper;
+import com.hotelreservation.model.ReservationStatus;
 import com.hotelreservation.model.Room;
+import com.hotelreservation.repository.ReservationRepository;
 import com.hotelreservation.repository.RoomRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,21 +23,33 @@ import java.util.stream.Collectors;
 public class RoomService {
 
     private final RoomRepository roomRepository;
+    private final ReservationRepository reservationRepository;
     private final RoomMapper roomMapper;
 
-    public RoomService(RoomRepository roomRepository, RoomMapper roomMapper) {
+    public RoomService(RoomRepository roomRepository, 
+                       ReservationRepository reservationRepository, 
+                       RoomMapper roomMapper) {
         this.roomRepository = roomRepository;
+        this.reservationRepository = reservationRepository;
         this.roomMapper = roomMapper;
     }
 
     /**
      * Retrieves all hotel rooms.
+     * Availability is dynamically calculated based on current active reservations.
      *
      * @return list of all rooms as {@link RoomResponse}
      */
     public List<RoomResponse> getAllRooms() {
+        // Find all rooms that are currently occupied today
+        List<Long> occupiedRoomIds = reservationRepository.findOccupiedRoomIdsOnDate(
+                LocalDate.now(), ReservationStatus.CONFIRMED);
+
         return roomRepository.findAll().stream()
-                .map(roomMapper::toResponse)
+                .map(room -> {
+                    boolean isAvailable = !occupiedRoomIds.contains(room.getId());
+                    return roomMapper.toResponse(room, isAvailable);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -48,11 +63,15 @@ public class RoomService {
     public RoomResponse getRoomById(Long id) {
         Room room = roomRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + id));
-        return roomMapper.toResponse(room);
+        
+        boolean isAvailable = !reservationRepository.hasOverlappingReservation(
+                id, LocalDate.now(), LocalDate.now().plusDays(1), ReservationStatus.CONFIRMED);
+                
+        return roomMapper.toResponse(room, isAvailable);
     }
 
     /**
-     * Creates a new hotel room. Availability defaults to {@code true}.
+     * Creates a new hotel room.
      *
      * @param request validated room creation payload
      * @return the newly created room as {@link RoomResponse}
@@ -60,8 +79,8 @@ public class RoomService {
     @Transactional
     public RoomResponse createRoom(RoomRequest request) {
         Room room = roomMapper.toEntity(request);
-        room.setAvailability(true);
-        return roomMapper.toResponse(roomRepository.save(room));
+        // A newly created room is always available as it has no reservations yet
+        return roomMapper.toResponse(roomRepository.save(room), true);
     }
 
     /**
@@ -84,7 +103,12 @@ public class RoomService {
         room.setCapacity(request.getCapacity());
         room.setImageUrl(request.getImageUrl());
 
-        return roomMapper.toResponse(roomRepository.save(room));
+        Room savedRoom = roomRepository.save(room);
+        
+        boolean isAvailable = !reservationRepository.hasOverlappingReservation(
+                id, LocalDate.now(), LocalDate.now().plusDays(1), ReservationStatus.CONFIRMED);
+                
+        return roomMapper.toResponse(savedRoom, isAvailable);
     }
 
     /**

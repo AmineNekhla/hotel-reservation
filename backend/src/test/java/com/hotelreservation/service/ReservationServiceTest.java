@@ -60,7 +60,6 @@ class ReservationServiceTest {
         testRoom = new Room();
         testRoom.setId(10L);
         testRoom.setType("Suite");
-        testRoom.setAvailability(true);
 
         validRequest = new ReservationRequest();
         validRequest.setRoomId(10L);
@@ -116,17 +115,6 @@ class ReservationServiceTest {
 
     // ─── Room Availability ─────────────────────────────────────────────────────
 
-    @Test
-    @DisplayName("createReservation should throw ConflictException when room is marked unavailable")
-    void createReservation_roomUnavailable_throwsConflict() {
-        testRoom.setAvailability(false);
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(testUser));
-        when(roomRepository.findById(10L)).thenReturn(Optional.of(testRoom));
-
-        assertThatThrownBy(() -> reservationService.createReservation(validRequest, "john@example.com"))
-                .isInstanceOf(ConflictException.class)
-                .hasMessageContaining("not available");
-    }
 
     @Test
     @DisplayName("createReservation should throw ConflictException when date range overlaps an existing booking")

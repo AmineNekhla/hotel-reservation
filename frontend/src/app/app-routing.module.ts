@@ -13,11 +13,14 @@ import { NotFoundComponent } from './components/not-found/not-found.component';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 
+import { RoomDetailComponent } from './components/room-detail/room-detail.component';
+
 const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'rooms', component: RoomListComponent },
+  { path: 'rooms/:id', component: RoomDetailComponent },
   { path: 'reservation', component: ReservationFormComponent, canActivate: [AuthGuard] },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'admin', component: AdminComponent, canActivate: [AuthGuard, AdminGuard] },

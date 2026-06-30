@@ -39,8 +39,8 @@ public class AdminService {
     public StatsResponse getDashboardStats() {
         long totalUsers          = userRepository.count();
         long totalRooms          = roomRepository.count();
-        long availableRooms      = roomRepository.countByAvailabilityTrue();
-        long occupiedRooms       = totalRooms - availableRooms;
+        long occupiedRooms       = reservationRepository.countOccupiedRoomsOnDate(java.time.LocalDate.now(), ReservationStatus.CONFIRMED);
+        long availableRooms      = totalRooms - occupiedRooms;
         long totalReservations   = reservationRepository.count();
         long pendingRes          = reservationRepository.countByStatus(ReservationStatus.PENDING);
         long confirmedRes        = reservationRepository.countByStatus(ReservationStatus.CONFIRMED);

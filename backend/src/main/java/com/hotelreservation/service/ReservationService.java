@@ -124,9 +124,6 @@ public class ReservationService {
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + request.getRoomId()));
 
-        if (!room.isAvailability()) {
-            throw new ConflictException("This room is not available for booking");
-        }
 
         boolean hasOverlap = reservationRepository.hasOverlappingReservation(
                 room.getId(), request.getStartDate(), request.getEndDate(), ReservationStatus.CONFIRMED);
