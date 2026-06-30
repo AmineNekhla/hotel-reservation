@@ -131,8 +131,8 @@ import { User } from '../../models/user';
             </thead>
             <tbody>
               <tr *ngFor="let r of reservations">
-                <td>{{ r.user?.name }}<br><small class="text-muted">{{ r.user?.email }}</small></td>
-                <td>{{ r.room?.type }} <small>(#{{ r.room?.roomNumber }})</small></td>
+                <td>{{ r.user.name }}<br><small class="text-muted">{{ r.user.email }}</small></td>
+                <td>{{ r.room.type }} <small>(#{{ r.room.roomNumber }})</small></td>
                 <td>{{ r.startDate }} <br>to<br> {{ r.endDate }}</td>
                 <td>
                   <span class="badge" [ngClass]="{

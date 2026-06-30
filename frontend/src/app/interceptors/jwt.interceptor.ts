@@ -3,6 +3,8 @@ import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/c
 import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
+import { environment } from '../../environments/environment';
+
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService) {}
@@ -10,7 +12,7 @@ export class JwtInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     // add auth header with jwt if user is logged in and request is to the api url
     const token = this.authService.getToken();
-    const isApiUrl = request.url.startsWith('http://localhost:8082/api');
+    const isApiUrl = request.url.startsWith(environment.apiUrl);
     
     if (token && isApiUrl) {
       request = request.clone({
