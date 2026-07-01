@@ -488,11 +488,20 @@ import { Room } from '../../models/room';
       margin-bottom: 1rem;
     }
     
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+    
     @media (max-width: 768px) {
       .hero { min-height: 80vh; }
       .hero-actions { flex-direction: column; width: 100%; padding: 0 2rem; }
       .ml-3 { margin-left: 0; }
       .trust-grid { flex-direction: column; gap: 1.5rem; align-items: flex-start; padding: 0 1rem; }
+      .hidden-mobile { display: none !important; }
+      .hidden-desktop { display: block !important; }
+      .hero h1 { font-size: 2.5rem; }
     }
   `]
 })
