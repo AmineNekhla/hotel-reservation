@@ -172,8 +172,8 @@ import { Room } from '../../models/room';
             <div class="author">
               <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=100&h=100&q=80" alt="Sarah J.">
               <div>
-                <strong>Sarah Jenkins</strong>
-                <span>New York, USA</span>
+                <strong>Taiga Salma</strong>
+                <span>Agadir, Morocco</span>
               </div>
             </div>
           </div>
@@ -183,8 +183,8 @@ import { Room } from '../../models/room';
             <div class="author">
               <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=100&h=100&q=80" alt="Michael T.">
               <div>
-                <strong>Michael Thompson</strong>
-                <span>London, UK</span>
+                <strong>Hedda Mohamed</strong>
+                <span>Yousoufia, Morocco</span>
               </div>
             </div>
           </div>
@@ -194,8 +194,8 @@ import { Room } from '../../models/room';
             <div class="author">
               <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=100&h=100&q=80" alt="Emily R.">
               <div>
-                <strong>Emily Rodriguez</strong>
-                <span>Madrid, Spain</span>
+                <strong>Amira Hachmi</strong>
+                <span>Tangier, Morocco</span>
               </div>
             </div>
           </div>

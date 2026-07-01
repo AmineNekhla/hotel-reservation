@@ -20,7 +20,7 @@ import { ToastService } from '../../services/toast.service';
         <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
           <div class="form-group">
             <label class="form-label">Full Name</label>
-            <input type="text" class="form-control" formControlName="name" [class.is-invalid]="submitted && f['name'].errors" placeholder="John Doe" />
+            <input type="text" class="form-control" formControlName="name" [class.is-invalid]="submitted && f['name'].errors" placeholder="Alaoui Mohamed" />
             <div *ngIf="submitted && f['name'].errors" class="error-message">
               <span *ngIf="f['name'].errors['required']">Name is required</span>
             </div>
