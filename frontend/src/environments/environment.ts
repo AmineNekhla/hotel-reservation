@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://hotel-reservation-production-ec9b.up.railway.app/api'
+  apiUrl: 'https://vigilant-curiosity-production-674f.up.railway.app/api'
 };
