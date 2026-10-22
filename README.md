@@ -24,8 +24,7 @@ A full-stack hotel booking app built with Spring Boot 3 and Angular 17. I built 
 ## Running it locally
 
 **Backend:**
-`ash
-cd backend
+`cd backend
 mvn spring-boot:run
 `
 API runs at http://localhost:8082. H2 console at http://localhost:8082/h2-console (JDBC: jdbc:h2:mem:hoteldb, user: sa, no password).
@@ -33,8 +32,7 @@ API runs at http://localhost:8082. H2 console at http://localhost:8082/h2-consol
 On startup it seeds 5 rooms and one admin account automatically.
 
 **Frontend:**
-`ash
-cd frontend
+`cd frontend
 npm install
 ng serve
 `
@@ -49,8 +47,7 @@ Open http://localhost:4200.
 
 ## Tests
 
-`ash
-cd backend
+`cd backend
 mvn test
 `
 
